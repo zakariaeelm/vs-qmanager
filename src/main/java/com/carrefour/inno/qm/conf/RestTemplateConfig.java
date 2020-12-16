@@ -46,19 +46,42 @@ public class RestTemplateConfig {
     			+ "connection timeout: {}, read timeout: {}",
     			totalConnections, maxConnectionsPerRoute, connectionTimeout, readTimeout);
     	
-    	TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+//    	TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+//
+//        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+//                .loadTrustMaterial(null, acceptingTrustStrategy)
+//                .build();
+//
+//        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+//
+//        CloseableHttpClient httpClient = HttpClients.custom()
+//                .setConnectionManager(buildConnectionManager())
+//        		.setSSLSocketFactory(csf)
+//                .build();
 
-        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
-                .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build();
+    	
+        TrustStrategy acceptingTrustStrategy = new TrustStrategy() {
+        	public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+        		return true;
+        	}
+        };
 
-        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+        SSLContext sslContext = null;
+		try {
+			sslContext = org.apache.http.ssl.SSLContexts.custom().loadTrustMaterial(null, acceptingTrustStrategy).build();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			//throw new ServiceException(GlobalErrorMessage.INTERNAL_SERVER_ERROR);
+			throw new RuntimeException(e);
+		}
 
-        CloseableHttpClient httpClient = HttpClients.custom()
-                .setConnectionManager(buildConnectionManager())
-        		.setSSLSocketFactory(csf)
-                .build();
+        SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
 
+      CloseableHttpClient httpClient = HttpClients.custom()
+    		  .setConnectionManager(buildConnectionManager())
+    		  .setSSLSocketFactory(sslConnectionFactory)
+    		  .build();
+            	  	
+    	
         HttpComponentsClientHttpRequestFactory requestFactory =
                 new HttpComponentsClientHttpRequestFactory();
 
