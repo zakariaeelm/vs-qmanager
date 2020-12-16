@@ -77,8 +77,8 @@ public class RestTemplateConfig {
         SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
 
       CloseableHttpClient httpClient = HttpClients.custom()
-    		  .setConnectionManager(buildConnectionManager())
     		  .setSSLSocketFactory(sslConnectionFactory)
+    		  .setConnectionManager(buildConnectionManager(sslConnectionFactory))
     		  .build();
             	  	
     	
@@ -94,9 +94,12 @@ public class RestTemplateConfig {
         return restTemplate;
     }
     
-    private PoolingHttpClientConnectionManager buildConnectionManager() {
+    private PoolingHttpClientConnectionManager buildConnectionManager(SSLConnectionSocketFactory sslConnectionFactory) {
     	
-    	PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+    	Registry<ConnectionSocketFactory> socketFactoryRegistry = 
+    			RegistryBuilder.<ConnectionSocketFactory> create().register("https", sslConnectionFactory).build();
+    	
+    	PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
     	poolingHttpClientConnectionManager.setMaxTotal(totalConnections);
     	poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxConnectionsPerRoute);
     	
