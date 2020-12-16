@@ -17,6 +17,7 @@ public class Store {
     private String customerByTrx;
     private String refreshInterval;
     private String format;
+    private String lastTotalTrxNbr;
 
     public Store() {}
 
@@ -128,6 +129,10 @@ public class Store {
             return true;
     }
 
+    public void incrementCurrentState(int counter) {
+        currentState = String.valueOf(Integer.parseInt(currentState) + counter);
+    }
+    
     public String getId() {
         return id;
     }
@@ -152,18 +157,19 @@ public class Store {
         this.format = format;
     }
 
+    public String getLastTotalTrxNbr() {
+		return lastTotalTrxNbr;
+	}
+    
+    public void setLastTotalTrxNbr(String lastTotalTrxNbr) {
+		this.lastTotalTrxNbr = lastTotalTrxNbr;
+	}
+    
     @Override
-    public String toString() {
-        return "Store{" +
-                "id='" + id + '\'' +
-                ", storeEan='" + storeEan + '\'' +
-                ", ppsf='" + ppsf + '\'' +
-                ", storeDesc='" + storeDesc + '\'' +
-                ", capacity='" + capacity + '\'' +
-                ", lastUpdate='" + lastUpdate + '\'' +
-                ", currentState='" + currentState + '\'' +
-                ", customerByTrx='" + customerByTrx + '\'' +
-                ", refreshInterval='" + refreshInterval + '\'' +
-                '}';
-    }
+	public String toString() {
+		return String.format(
+				"Store [id=%s, storeEan=%s, ppsf=%s, storeDesc=%s, capacity=%s, lastUpdate=%s, currentState=%s, customerByTrx=%s, refreshInterval=%s, format=%s, lastTotalTrxNbr=%s]",
+				id, storeEan, ppsf, storeDesc, capacity, lastUpdate, currentState, customerByTrx, refreshInterval,
+				format, lastTotalTrxNbr);
+	}
 }

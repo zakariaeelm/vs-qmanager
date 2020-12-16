@@ -8,7 +8,7 @@
         <version>2.1.2.RELEASE</version>
         <relativePath />
     </parent>
-    <groupId>com.carrefour.inno.</groupId>
+    <groupId>com.carrefour.inno</groupId>
     <artifactId>demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
@@ -52,8 +52,8 @@
     </dependencies>
 
     <build>
-        <finalName>qmtest</finalName>
-<!--        <finalName>innoapi</finalName>-->
+<!--         <finalName>qmtest</finalName> -->
+       <finalName>innoapi</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -1,7 +1,11 @@
 package com.carrefour.inno.qm.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.carrefour.inno.qm.model.Token;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.RequestEntity.get;
+import static org.springframework.http.RequestEntity.post;
+
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,11 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.RequestEntity.post;
-import static org.springframework.http.RequestEntity.get;
+import com.carrefour.inno.qm.model.Token;
 
 @Service
 public class ApiService {
@@ -67,20 +67,32 @@ public class ApiService {
 
         try{
 
-            ResponseEntity<String> result = restTemplate.exchange(request, String.class);
+//            ResponseEntity<String> result = restTemplate.exchange(request, String.class);
+//
+//            ObjectMapper mapper = new ObjectMapper();
+//            Token token = mapper.readValue(result.getBody(), Token.class);
+//
+//            //return  result.getBody();
+//            return  token;
 
-            ObjectMapper mapper = new ObjectMapper();
-            Token token = mapper.readValue(result.getBody(), Token.class);
-
-            //return  result.getBody();
-            return  token;
-
+            ResponseEntity<Token> result = restTemplate.exchange(request, Token.class);
+        	logger.info("get response token generate: {}", result);
+            
+            if (result.getStatusCode().is2xxSuccessful()) {
+            	return result.getBody();
+            } else {
+            	throw new RuntimeException("bad request");
+            }
+        	
         } catch (Exception e) {
-            logger.error("failed to send request : message ", e);
+            //logger.error("failed to send request : message ", e);
+        	logger.error("error while try generate token", e);
+        	throw new RuntimeException("unhandled error");
         }
-        return null;
+        //return null;
     }
-    public String httpsPostCall(String baseUrl, String body){
+    
+    public String httpsPostCall(String baseUrl, String body) {
 
         String token = generateToken().getToken();
         URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
@@ -94,15 +106,21 @@ public class ApiService {
                 .header(HEADER_TOKEN, token)
                 .body(body);
 
-        try{
-
+        try {
+        	logger.info("send request to get store ean, body: {}", body);
             ResponseEntity<String> result = restTemplate.exchange(request, String.class);
-            return  result.getBody();
-
+        	logger.info("get response store ean request, body: {}, response: {}", body, result);
+            
+        	if (result.getStatusCode().is2xxSuccessful()) {
+            	return result.getBody();
+            } else {
+            	throw new RuntimeException("bad request");
+            }
         } catch (Exception e) {
-            System.out.println("failed to send POST request : message" + e.getMessage());
+            //System.out.println("failed to send POST request : message" + e.getMessage());
+        	logger.info("unhandled error while request store ean, body: {}", body);
+        	throw new RuntimeException("unhandled error");
         }
-        return null;
     }
     public String httpsGetCall(String baseUrl, String params){
 

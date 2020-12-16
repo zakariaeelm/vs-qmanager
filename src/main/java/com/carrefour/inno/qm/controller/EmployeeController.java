@@ -1,29 +1,37 @@
 package com.carrefour.inno.qm.controller;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Random;
-
-import com.carrefour.inno.qm.dao.EmployeeDAO;
-import com.carrefour.inno.qm.service.CovidService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.carrefour.inno.qm.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import org.springframework.web.util.UriComponentsBuilder;
-
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.RequestEntity.get;
 import static org.springframework.http.RequestEntity.post;
 
-@RestController
+import java.net.URI;
+import java.util.List;
+import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.carrefour.inno.qm.dao.EmployeeDAO;
+import com.carrefour.inno.qm.model.Employee;
+import com.carrefour.inno.qm.model.Employees;
+import com.carrefour.inno.qm.model.PhenixTrxResponse;
+import com.carrefour.inno.qm.model.Store;
+import com.carrefour.inno.qm.model.Token;
+import com.carrefour.inno.qm.service.CovidService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+//@RestController
 public class EmployeeController {
 
     final Logger logger = LoggerFactory.getLogger(EmployeeController.class);
