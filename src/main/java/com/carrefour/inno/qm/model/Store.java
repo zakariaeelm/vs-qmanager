@@ -18,6 +18,8 @@ public class Store {
     private String refreshInterval;
     private String format;
     private String lastTotalTrxNbr;
+    private int agregateValue;
+    public int zoneId;
 
     public Store() {}
 
@@ -123,16 +125,16 @@ public class Store {
     }
 
     public boolean incrementCountBy(int step) {
-            int state = Integer.parseInt(currentState);
-            currentState = String.valueOf(state + step);
+        int state = Integer.parseInt(currentState);
+        currentState = String.valueOf(state + step);
 
-            return true;
+        return true;
     }
 
     public void incrementCurrentState(int counter) {
         currentState = String.valueOf(Integer.parseInt(currentState) + counter);
     }
-    
+
     public String getId() {
         return id;
     }
@@ -158,18 +160,34 @@ public class Store {
     }
 
     public String getLastTotalTrxNbr() {
-		return lastTotalTrxNbr;
-	}
-    
+        return lastTotalTrxNbr;
+    }
+
     public void setLastTotalTrxNbr(String lastTotalTrxNbr) {
-		this.lastTotalTrxNbr = lastTotalTrxNbr;
-	}
-    
+        this.lastTotalTrxNbr = lastTotalTrxNbr;
+    }
+
+    public int getAgregateValue() {
+        return agregateValue;
+    }
+
+    public void setAgregateValue(int agregateValue) {
+        this.agregateValue = agregateValue;
+    }
+
+    public int getZoneId() {
+        return zoneId;
+    }
+
+    public void setZoneId(int zoneId) {
+        this.zoneId = zoneId;
+    }
+
     @Override
-	public String toString() {
-		return String.format(
-				"Store [id=%s, storeEan=%s, ppsf=%s, storeDesc=%s, capacity=%s, lastUpdate=%s, currentState=%s, customerByTrx=%s, refreshInterval=%s, format=%s, lastTotalTrxNbr=%s]",
-				id, storeEan, ppsf, storeDesc, capacity, lastUpdate, currentState, customerByTrx, refreshInterval,
-				format, lastTotalTrxNbr);
-	}
+    public String toString() {
+        return String.format(
+                "Store [id=%s, storeEan=%s, ppsf=%s, storeDesc=%s, capacity=%s, lastUpdate=%s, currentState=%s, customerByTrx=%s, refreshInterval=%s, format=%s, lastTotalTrxNbr=%s]",
+                id, storeEan, ppsf, storeDesc, capacity, lastUpdate, currentState, customerByTrx, refreshInterval,
+                format, lastTotalTrxNbr);
+    }
 }

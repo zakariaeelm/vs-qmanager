@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <title>
+    Queue Manager
+  </title>
+  <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no' name='viewport' />
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" th:href="@{https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:400,700|Material+Icons}" />
+  <link type="text/css" rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css}"/>
+  <!-- CSS Files -->
+  <link type="text/css" th:href="@{/css/material-dashboard.css?v=2.1.1}" rel="stylesheet" />
+  <!-- CSS Just for demo purpose, don't include it in your project -->
+<!--   <link type="text/css" th:href="@{demo/demo.css}" rel="stylesheet" /> -->
+  <link type="text/css" rel="stylesheet" th:href="@{/css/main.css}" />
+    <style type="text/css">
+        .numberCircle {
+            border-radius: 50%;
+            width: 320px;
+            height: 320px;
+            padding: 8px;
+            border: 10px solid #666;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+  <div class="">
+    <div class="">
+	    <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
+	        <div class="container-fluid">
+	          <div class="navbar-wrapper">
+	            <a class="navbar-brand">
+	            	<img th:src="@{/img/carrefourlogo.png}" alt="" style="width: inherit;height: inherit;"/>
+	        	</a>
+	          </div>
+	          <button class="navbar-toggler" type="button" data-toggle="collapse" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="navbar-toggler-icon icon-bar"></span>
+	            <span class="navbar-toggler-icon icon-bar"></span>
+	            <span class="navbar-toggler-icon icon-bar"></span>
+	          </button>
+	          <div class="collapse navbar-collapse justify-content-end">
+	            <ul class="navbar-nav">
+	            </ul>
+	          </div>
+	        </div>
+	      </nav>
+      <!-- End Navbar -->
+      <div class="content">
+        <div class="container-fluid">
+        <div class="row text-center">
+        	<img th:src="@{/img/logoqueue.png}" alt="" style="width: 100px;height: 100px;display: block;margin: auto;"/>
+        </div>
+          <div class="row">
+          	<div class="col-md-4"></div>
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header card-header-primary">
+                  <h4 class="card-title text-center" style="font-size: 40px;">Bienvenue</h4>
+                  <p class="card-category text-center" style="font-size: 28px;">dans votre magasin Carrefour <span id="storeDesc" name="storeDesc"></span></p>
+                </div>
+                <div class="card-body">
+
+			            <form class="form" method="POST" th:object="${ticket}" th:action="@{/ticket}">
+                        <div class="card-body">
+                        </div>
+                        <div class="text-center">
+                        	<input type="hidden" id="fid" name="fid"/>
+                            <p class="card-category text-center" style="display: flex;justify-content: center;align-items: center;">
+                                <span id="storeCurrentState" name="storeCurrentState" class="numberCircle" style="font-size: 100px;font-weight: 500;display: flex;justify-content: center;align-items: center;"></span>
+                            </p>
+                            <p class="card-category text-center" style="font-size: 16px;">Personnes présentes dans votre magasin</p>
+
+                            <p class="card-category text-center" style="font-size: 16px;">Capacité maximale de personnes :
+                                <span class="card-category text-center" style="font-size: 20px;font-weight: 500;" id="storeCapacity" name="storeCapacity"></span>
+                            </p>
+		                </div>
+                    </form>
+
+              </div>
+            </div>
+            </div>
+            <div class="col-md-4"></div>
+         </div>
+        </div>
+      </div>
+      <footer class="footer">
+        <div class="container-fluid">
+            <p class="card-category text-center" style="font-size: 10px;font-style: italic;">Conformément à l'article 37 décret n°2021-99 du 30/01/2021</p>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <!--   Core JS Files   -->
+  <script th:src="@{/js/core/jquery.min.js}"></script>
+  <script th:src="@{/js/core/popper.min.js}"></script>
+  <script th:src="@{/js/core/bootstrap-material-design.min.js}"></script>
+  <script th:src="@{/js/plugins/perfect-scrollbar.jquery.min.js}"></script>
+  <!-- Plugin for the momentJs  -->
+  <script th:src="@{/js/plugins/moment.min.js}"></script>
+  <!--  Plugin for Sweet Alert -->
+  <script th:src="@{/js/plugins/sweetalert2.js}"></script>
+  <!-- Forms Validations Plugin -->
+  <script th:src="@{/js/plugins/jquery.validate.min.js}"></script>
+  <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
+  <script th:src="@{/js/plugins/jquery.bootstrap-wizard.js}"></script>
+  <!--	Plugin for Select, full documentation here: http://silviomoreto.github.io/bootstrap-select -->
+  <!--  DataTables.net Plugin, full documentation here: https://datatables.net/  -->
+  <script th:src="@{/js/plugins/jquery.dataTables.min.js}"></script>
+  <!--	Plugin for Tags, full documentation here: https://github.com/bootstrap-tagsinput/bootstrap-tagsinputs  -->
+  <script th:src="@{/js/plugins/bootstrap-tagsinput.js}"></script>
+  <!-- Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
+  <script th:src="@{/js/plugins/jasny-bootstrap.min.js}"></script>
+  <!-- Vector Map plugin, full documentation here: http://jvectormap.com/documentation/ -->
+  <script th:src="@{/js/plugins/jquery-jvectormap.js}"></script>
+  <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
+  <script th:src="@{/js/plugins/nouislider.min.js}"></script>
+  <!-- Include a polyfill for ES6 Promises (optional) for IE11, UC Browser and Android browser support SweetAlert -->
+  <script th:src="@{https://cdnjs.cloudflare.com/ajax/libs/core-js/2.4.1/core.js}"></script>
+  <!-- Library for adding dinamically elements -->
+  <script th:src="@{/js/plugins/arrive.min.js}"></script>
+  <!--  Notifications Plugin    -->
+  <script th:src="@{/js/plugins/bootstrap-notify.js}"></script>
+  <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
+  <script th:src="@{/js/material-dashboard.js?v=2.1.1}" type="text/javascript"></script>
+  <!-- Material Dashboard DEMO methods, don't include it in your project! -->
+<!--   <script src="demo/demo.js"></script> -->
+  <script>
+
+    $(document).ready(function() {
+
+        var url_string = window.location.href;
+        var url = new URL(url_string);
+        var ppsf = url.searchParams.get("ppsf");
+        var capacity = url.searchParams.get("capacity");
+        var storeEan = "3020339800600";
+
+        var storeDesc = document.querySelector('#storeDesc');
+        var storeCurrentState = document.querySelector('#storeCurrentState');
+        var storeCapacity = document.querySelector('#storeCapacity');
+        //storeDesc.value = c;
+        //storeCurrentState.value = c;
+        //storeCapacity.value = c;
+
+        //var fid = document.querySelector('#fid');
+        //fid.value = c;
+        console.log(ppsf + " :::: " + capacity);
+
+        $.ajax({
+            async: false,
+            type: "GET",
+            contentType: "application/json",
+            url: "https://inti.carrefour.com/qmanagertest/storelocator/"+ ppsf +"/capacity/" + capacity + "/ratio/1",
+            success: function (data) {
+
+                console.log("SUCCESS : ", data);
+                storeEan = data.storeEan;
+                $("#storeDesc").text(data.storeDesc);
+                $("#storeCurrentState").text(data.currentState);
+                $("#storeCapacity").text(data.capacity);
+                //$("#btn-search").prop("disabled", false);
+
+            },
+            error: function (e) {
+                console.log("ERROR : ", e);
+            }
+        });
+
+        function fireStoreUpdate(ean) {
+            console.log(">>> start fire Store Update with ean : ", ean);
+            $.ajax({
+                async: false,
+                type: "GET",
+                contentType: "application/json",
+                url: "https://inti.carrefour.com/qmanagertest/customerscount/store/"+ ean +"/counter/0",
+                success: function (data) {
+
+                    console.log("SUCCESS : ", data);
+                    $("#storeDesc").text(data.storeDesc);
+                    $("#storeCurrentState").text(data.currentState);
+                    $("#storeCapacity").text(data.capacity);
+
+                },
+                error: function (e) {
+                    console.log("ERROR : ", e);
+                }
+            });
+
+        }
+
+        setInterval(function()
+            {
+                fireStoreUpdate(storeEan);
+            }
+            , 30000);
+
+      $().ready(function() {
+        $sidebar = $('.sidebar');
+
+        $sidebar_img_container = $sidebar.find('.sidebar-background');
+
+        $full_page = $('.full-page');
+
+        $sidebar_responsive = $('body > .navbar-collapse');
+
+        window_width = $(window).width();
+
+        fixed_plugin_open = $('.sidebar .sidebar-wrapper .nav li.active a p').html();
+
+        $('.fixed-plugin a').click(function(event) {
+          // Alex if we click on switch, stop propagation of the event, so the dropdown will not be hide, otherwise we set the  section active
+          if ($(this).hasClass('switch-trigger')) {
+            if (event.stopPropagation) {
+              event.stopPropagation();
+            } else if (window.event) {
+              window.event.cancelBubble = true;
+            }
+          }
+        });
+
+        $('.fixed-plugin .active-color span').click(function() {
+          $full_page_background = $('.full-page-background');
+
+          $(this).siblings().removeClass('active');
+          $(this).addClass('active');
+
+          var new_color = $(this).data('color');
+
+          if ($sidebar.length != 0) {
+            $sidebar.attr('data-color', new_color);
+          }
+
+          if ($full_page.length != 0) {
+            $full_page.attr('filter-color', new_color);
+          }
+
+          if ($sidebar_responsive.length != 0) {
+            $sidebar_responsive.attr('data-color', new_color);
+          }
+        });
+
+        $('.fixed-plugin .background-color .badge').click(function() {
+          $(this).siblings().removeClass('active');
+          $(this).addClass('active');
+
+          var new_color = $(this).data('background-color');
+
+          if ($sidebar.length != 0) {
+            $sidebar.attr('data-background-color', new_color);
+          }
+        });
+
+        $('.fixed-plugin .img-holder').click(function() {
+          $full_page_background = $('.full-page-background');
+
+          $(this).parent('li').siblings().removeClass('active');
+          $(this).parent('li').addClass('active');
+
+
+          var new_image = $(this).find("img").attr('src');
+
+          if ($('.switch-sidebar-image input:checked').length == 0) {
+            var new_image = $('.fixed-plugin li.active .img-holder').find("img").attr('src');
+            var new_image_full_page = $('.fixed-plugin li.active .img-holder').find('img').data('src');
+
+            $sidebar_img_container.css('background-image', 'url("' + new_image + '")');
+            $full_page_background.css('background-image', 'url("' + new_image_full_page + '")');
+          }
+
+          if ($sidebar_responsive.length != 0) {
+            $sidebar_responsive.css('background-image', 'url("' + new_image + '")');
+          }
+        });
+
+        $('.switch-sidebar-image input').change(function() {
+          $full_page_background = $('.full-page-background');
+
+          $input = $(this);
+
+          if ($input.is(':checked')) {
+            if ($sidebar_img_container.length != 0) {
+              $sidebar_img_container.fadeIn('fast');
+              $sidebar.attr('data-image', '#');
+            }
+
+            if ($full_page_background.length != 0) {
+              $full_page_background.fadeIn('fast');
+              $full_page.attr('data-image', '#');
+            }
+
+            background_image = true;
+          } else {
+            if ($sidebar_img_container.length != 0) {
+              $sidebar.removeAttr('data-image');
+              $sidebar_img_container.fadeOut('fast');
+            }
+
+            if ($full_page_background.length != 0) {
+              $full_page.removeAttr('data-image', '#');
+              $full_page_background.fadeOut('fast');
+            }
+
+            background_image = false;
+          }
+        });
+
+        $('.switch-sidebar-mini input').change(function() {
+          $body = $('body');
+
+          $input = $(this);
+
+          if (md.misc.sidebar_mini_active == true) {
+            $('body').removeClass('sidebar-mini');
+            md.misc.sidebar_mini_active = false;
+
+            $('.sidebar .sidebar-wrapper, .main-panel').perfectScrollbar();
+
+          } else {
+
+            $('.sidebar .sidebar-wrapper, .main-panel').perfectScrollbar('destroy');
+
+            setTimeout(function() {
+              $('body').addClass('sidebar-mini');
+
+              md.misc.sidebar_mini_active = true;
+            }, 300);
+          }
+
+          // we simulate the window Resize so the charts will get updated in realtime.
+          var simulateWindowResize = setInterval(function() {
+            window.dispatchEvent(new Event('resize'));
+          }, 180);
+
+          // we stop the simulation of Window Resize after the animations are completed
+          setTimeout(function() {
+            clearInterval(simulateWindowResize);
+          }, 1000);
+
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

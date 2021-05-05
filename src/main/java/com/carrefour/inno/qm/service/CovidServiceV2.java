@@ -2,6 +2,7 @@ package com.carrefour.inno.qm.service;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.RequestEntity.post;
+import static org.springframework.http.RequestEntity.get;
 
 import java.net.URI;
 import java.text.ParseException;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
+import com.carrefour.inno.qm.model.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -37,10 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.carrefour.inno.qm.dao.StoreRepository;
 import com.carrefour.inno.qm.dao.StoreRepositoryCustom;
-import com.carrefour.inno.qm.model.PhenixTrxResponse;
-import com.carrefour.inno.qm.model.Store;
-import com.carrefour.inno.qm.model.StoreDTO;
-import com.carrefour.inno.qm.model.Token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -50,10 +48,12 @@ public class CovidServiceV2 {
     private static final String DATE_FORMAT = "yyyyMMdd'T'HHmmss.SSSZ";
 
     private static final int TOKEN_GENERATION_DELAY = 900;
+    private static final int QUANTA_FLOW_TOKEN_GENERATION_DELAY = 1200;
     private static final int MAX_REFRESH_TOKEN_RETRIES = 3;
     private static final int REFRESH_TOKEN_RETRY_DELAY = 10;
 
     private Token phenixToken;
+    private QuantaFlowToken quantaFlowToken;
 
     static final Logger logger = LoggerFactory.getLogger(CovidServiceV2.class);
     private final String storeLocalUrl;
@@ -78,11 +78,28 @@ public class CovidServiceV2 {
         this.restTemplate = restTemplate;
 
         logger.info("initialise first phenix token");
-        refreshPhenixToken();
+        //refreshPhenixToken();
+        logger.info("initialise first QuantaFlow token");
+        //refreshQuantaFlowToken();
+        //QuantaFlowResponse qfResponse = getEntrancesCount("1356");
 
         scheduler = Executors.newSingleThreadScheduledExecutor();
+
         logger.info("schedule refresh phenix token every: {} seconds", TOKEN_GENERATION_DELAY);
-        scheduler.scheduleWithFixedDelay(this::refreshPhenixToken, 0, TOKEN_GENERATION_DELAY, TimeUnit.SECONDS);
+        //scheduler.scheduleWithFixedDelay(this::refreshPhenixToken, 0, TOKEN_GENERATION_DELAY, TimeUnit.SECONDS);
+
+        logger.info("schedule refresh QuantaFlow token every: {} seconds", QUANTA_FLOW_TOKEN_GENERATION_DELAY);
+        //scheduler.scheduleWithFixedDelay(this::refreshQuantaFlowToken, 0, QUANTA_FLOW_TOKEN_GENERATION_DELAY, TimeUnit.SECONDS);
+    }
+
+    private void refreshQuantaFlowToken() {
+        try {
+            logger.info(">>>start refresh QuantaFlow token");
+            quantaFlowToken = generateQuantaFlowToken();
+            logger.info(">>>end refresh QuantaFlow token: {}", quantaFlowToken.getUserToken());
+        } catch (Exception e) {
+            logger.error("error while refresh QuantaFlow token", e.getMessage());
+        }
     }
 
     private void refreshPhenixToken() {
@@ -202,6 +219,8 @@ public class CovidServiceV2 {
 
         Store store = storeRepository.findByPpsf(ppsf);
 
+        QuantaFlowResponse qfResponse = getEntrancesCount("" + store.getZoneId());
+
         if (store == null){
             logger.info("store dosen't exist create it ppsf: {}", ppsf);
 
@@ -219,10 +238,12 @@ public class CovidServiceV2 {
                 String ean = storeEan.getString("additionalPartyIdentification");
 
                 store = new Store( ppsf, ean, storeDTO);
+                store.setZoneId(1356);
+                store.setAgregateValue(qfResponse.getAgregateValue());
                 store.setId(ean);
                 store.setLastUpdate(getCurrentDateAsString());
                 store.setCapacity(capacity);
-                store.setCurrentState("0");
+                store.setCurrentState(qfResponse.getOccupencyValue() + "");
                 store.setLastTotalTrxNbr("0");
                 store.setCustomerByTrx(ratio);
                 store.setRefreshInterval("1");
@@ -245,6 +266,9 @@ public class CovidServiceV2 {
             store.setLastUpdate(getCurrentDateAsString());
             store.setCapacity(capacity);
             store.setCustomerByTrx(ratio);
+            store.setZoneId(store.getZoneId());
+            store.setAgregateValue(qfResponse.getAgregateValue());
+            store.setCurrentState(qfResponse.getOccupencyValue() + "");
             store = storeRepository.save(store);
 
             logger.info("end get/ reset store store: {}", store);
@@ -294,6 +318,32 @@ public class CovidServiceV2 {
             throw new RuntimeException("unhandled error");
         }
     }
+    private QuantaFlowResponse getEntrancesCount(String zoneId) {
+
+        logger.info("send request to QuantaFlow zoneId: {}, token: {}", zoneId, quantaFlowToken.getUserToken());
+
+        URI uri = UriComponentsBuilder.fromHttpUrl("https://api.quantaflow.com/live/v1/instant/zone/" + zoneId )
+                .build(true).toUri();
+
+        RequestEntity<Void> request = get(uri)
+                .header("Content-Type", "application/json")
+                .header("x-api-key", "eFNqWQWgEbp7uglDN4Kry76hQzeqID9WB843wYbT")
+                .header("Usertoken", quantaFlowToken.getUserToken())
+                .build();
+        try {
+            ResponseEntity<QuantaFlowResponse> result = restTemplate.exchange(request, QuantaFlowResponse.class);
+            logger.info("get response from QuantaFlow zoneId : {}, result: {}", zoneId, result);
+
+            if (result.getStatusCode().is2xxSuccessful()) {
+                return result.getBody();
+            } else {
+                throw new RuntimeException("bad request");
+            }
+        } catch (Exception e) {
+            logger.error("error while request QuantaFlow zoneId : {}", zoneId, e);
+            throw new RuntimeException("unhandled error");
+        }
+    }
 
     public Token generatePhenixToken(){
 
@@ -309,14 +359,6 @@ public class CovidServiceV2 {
 
         try{
 
-//            ResponseEntity<String> result = restTemplate.exchange(request, String.class);
-//
-//            ObjectMapper mapper = new ObjectMapper();
-//            Token token = mapper.readValue(result.getBody(), Token.class);
-//
-//            //return  result.getBody();
-//            return  token;
-
             ResponseEntity<Token> result = restTemplate.exchange(request, Token.class);
             if (result.getStatusCode().is2xxSuccessful()) {
                 return result.getBody();
@@ -326,6 +368,29 @@ public class CovidServiceV2 {
         } catch (Exception e) {
             //System.out.println("failed to send request : message" + e.getMessage());
             logger.error("error while try generate token for phenix call", e);
+            throw new RuntimeException("unhandled error");
+        }
+    }
+
+    private QuantaFlowToken generateQuantaFlowToken() {
+
+        URI uri = UriComponentsBuilder.fromHttpUrl("https://api.quantaflow.com/authentication/v1/login/")
+                .build(true).toUri();
+
+        RequestEntity<String> request = post(uri)
+                .header("Content-Type", "application/json")
+                .header("x-api-key", "eFNqWQWgEbp7uglDN4Kry76hQzeqID9WB843wYbT")
+                .body("{\n    \"user\": \"zelmerzouki\",\n    \"password\": \"3yz5v7px\",\n    \"lang\": \"en\" \n}");
+        try{
+            ResponseEntity<QuantaFlowToken> result = restTemplate.exchange(request, QuantaFlowToken.class);
+
+            if (result.getStatusCode().is2xxSuccessful()) {
+                return result.getBody();
+            } else {
+                throw new RuntimeException("bad request");
+            }
+        } catch (Exception e) {
+            logger.error("error while try generate token for QuantaFlow call", e);
             throw new RuntimeException("unhandled error");
         }
     }
@@ -340,11 +405,15 @@ public class CovidServiceV2 {
         }
 
         logger.info("increment entrances to store ppfs: {}, counter: {}", store.getPpsf(), counter);
-        store.incrementCurrentState(counter);
+        QuantaFlowResponse qfResponse = getEntrancesCount("1356");
+        store.incrementCurrentState(qfResponse.getAgregateValue() - store.getAgregateValue());
+        store.setAgregateValue(qfResponse.getAgregateValue());
+        //store.incrementCurrentState(counter);
 
         logger.info("request refresh store ean: {}, ppfs: {}", store.getStoreEan(), store.getPpsf());
 
         PhenixTrxResponse trx = getTrxCount(ean);
+
         if (trx.getData().get(0).getTrxNbr() > 0) {
 
             int totalTrxNbr = trx.getData().get(0).getTrxNbr();
@@ -356,6 +425,10 @@ public class CovidServiceV2 {
                         store.getPpsf(), totalTrxNbr, lastTotalTrxNbr);
                 deltaTrxNbr = 0;
             }
+
+            logger.info("[Phenix] Trx count delta before multiplication coef : {}", deltaTrxNbr);
+            deltaTrxNbr = (int)(new Double(deltaTrxNbr) * 1.4);
+            logger.info("[Phenix] Trx count delta after multiplication coef : {}", deltaTrxNbr);
 
             int state = Integer.parseInt(store.getCurrentState()) - deltaTrxNbr;
             store.setCurrentState("" + (state < 0 ? 0 : state));
@@ -423,30 +496,30 @@ public class CovidServiceV2 {
 //    public static void main(String[] args) {
 //        Store store = new Store();
 //        store.setCurrentState("0");
-//        
+//
 //    	store.incrementCurrentState(35);
-//                	
+//
 //    	int totalTrxNbr = 0;
 //    	int lastTotalTrxNbr = 0;
 //    	int deltaTrxNbr = (lastTotalTrxNbr == 0) ? 0 : (totalTrxNbr - lastTotalTrxNbr);
 //
 //    	int state = Integer.parseInt(store.getCurrentState()) - deltaTrxNbr;
-//    	
+//
 //    	store.setCurrentState("" + ((state < 0) ? 0 : state));
 //    	store.setLastTotalTrxNbr("" + totalTrxNbr);
 //
-//    	
+//
 //    	//deuxieme passage
 //    	store.incrementCurrentState(6);
-//    	
+//
 //    	deltaTrxNbr = (lastTotalTrxNbr == 0) ? 0 : (totalTrxNbr - lastTotalTrxNbr);
 //
 //    	state = Integer.parseInt(store.getCurrentState()) - deltaTrxNbr;
-//    	
+//
 //    	store.setCurrentState("" + ((state < 0) ? 0 : state));
 //    	store.setLastTotalTrxNbr("" + totalTrxNbr);
-//	
-//    	
+//
+//
 //    	System.out.println(store);
 //    }
 

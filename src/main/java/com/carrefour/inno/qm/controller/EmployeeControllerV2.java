@@ -10,12 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -43,33 +39,32 @@ public class EmployeeControllerV2 {
         this.covidService = covidService;
     }
 
-    
     @GetMapping(path="/test", produces = "application/json")
-    public Employees getEmployees() 
+    public Employees getEmployees()
     {
         return employeeDao.getAllEmployees();
     }
-    
+
     @PostMapping(path= "/test", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Object> addEmployee(
-                        @RequestHeader(name = "X-COM-PERSIST", required = true) String headerPersist,
-                        @RequestHeader(name = "X-COM-LOCATION", required = false, defaultValue = "ASIA") String headerLocation,
-                        @RequestBody Employee employee) 
-                 throws Exception 
-    {       
+            @RequestHeader(name = "X-COM-PERSIST", required = true) String headerPersist,
+            @RequestHeader(name = "X-COM-LOCATION", required = false, defaultValue = "ASIA") String headerLocation,
+            @RequestBody Employee employee)
+            throws Exception
+    {
         //Generate resource id
         Integer id = employeeDao.getAllEmployees().getEmployeeList().size() + 1;
         employee.setId(id);
-        
+
         //add resource
         employeeDao.addEmployee(employee);
-        
+
         //Create resource location
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                                    .path("/{id}")
-                                    .buildAndExpand(employee.getId())
-                                    .toUri();
-        
+                .path("/{id}")
+                .buildAndExpand(employee.getId())
+                .toUri();
+
         //Send location in response
         return ResponseEntity.created(location).build();
     }
@@ -103,23 +98,23 @@ public class EmployeeControllerV2 {
 
     @GetMapping(path="/storedesc/long/{long}/lat/{lat}/dist/{distance}", produces = "application/json")
     public Store storeDesc(@PathVariable("long") double longitude,
-                            @PathVariable("lat") double latitude,
-                            @PathVariable("distance") double distance) {
+                           @PathVariable("lat") double latitude,
+                           @PathVariable("distance") double distance) {
         return new Store("3020180269131", "MASSY LABSTOREFLASH", "300");
     }
-    
+
 //    @GetMapping(path="/customerscount/store/{store}/datetime/{date}", produces = "application/json")
 //    public Store refreshStore(@PathVariable("store") String storeEan,
 //                                @PathVariable("date") String date) {
 //
 //    	return covidService.refreshStore(storeEan);
 //    }
-    
+
     @GetMapping(path="/customerscount/store/{store}/counter/{counter}", produces = "application/json")
     public Store incrementAndRefreshStore(@PathVariable("store") String storeEan,
-                                @PathVariable("counter") int counter) {
+                                          @PathVariable("counter") int counter) {
 
-    	return covidService.incrementAndRefreshStore(storeEan, counter);
+        return covidService.incrementAndRefreshStore(storeEan, counter);
     }
 
 //    @GetMapping(path="/increment/store/{ean}/step/{step}", produces = "application/json")
@@ -132,8 +127,8 @@ public class EmployeeControllerV2 {
     public Store storeLocator(@PathVariable("ppsf") String ppsf,
                               @PathVariable("capacity") String capacity,
                               @PathVariable("ratio") String ratio) {
-        
-    	return covidService.storeLocator(ppsf.toUpperCase(), capacity, "1");
+
+        return covidService.storeLocator(ppsf.toUpperCase(), capacity, "1");
     }
 
     @GetMapping(path="/findall", produces = "application/json")
@@ -230,15 +225,3 @@ public class EmployeeControllerV2 {
         return covidService.storeLocator(ean);
     }*/
 }
-
-
-
-
-
-
-
-
-
-
-
-
