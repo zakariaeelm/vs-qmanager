@@ -55,15 +55,15 @@ public class ApiService {
     }
 
     public Token generateToken(){
-        URI uri = UriComponentsBuilder.fromHttpUrl(AUTH_PROD_URL)
-                .build(true)
-                .toUri();
+        URI uri = UriComponentsBuilder.fromHttpUrl("https://internal.apim.carrefour.com/retail/v2/access_management/authenticate")
+                .build(true).toUri();
 
         RequestEntity<String> request = post(uri)
-                .accept(APPLICATION_JSON)
-                .header( HEADER_CLIENT_ID,INTI_CLIENT_ID)
-                .header(HEADER_CLIENT_SECRET,INTI_CLIENT_SECRET)
-                .body("{\"ldap_user\":\"" + LDAP_USER + "\",\"ldap_password\":\"" + LDAP_PWD + "\"}");
+                .header("accept", "application/json")
+                .header("content-type", "application/json")
+                .header("x-apigee-client-id", "qAh98noUZkV9GcKWWGSadvRpe70FfDe3")
+                .header("x-apigee-client-secret", "TJVDYMNWaxbgiHAB")
+                .body("{\"ldap_user\":\"CS$_PHENIX_TIC_ET_AU_DELA\",\"ldap_password\":\"Ls$MtTk5\"}");
 
         try{
 
@@ -76,22 +76,22 @@ public class ApiService {
 //            return  token;
 
             ResponseEntity<Token> result = restTemplate.exchange(request, Token.class);
-        	logger.info("get response token generate: {}", result);
-            
+            logger.info("get response token generate: {}", result);
+
             if (result.getStatusCode().is2xxSuccessful()) {
-            	return result.getBody();
+                return result.getBody();
             } else {
-            	throw new RuntimeException("bad request");
+                throw new RuntimeException("bad request");
             }
-        	
+
         } catch (Exception e) {
             //logger.error("failed to send request : message ", e);
-        	logger.error("error while try generate token", e);
-        	throw new RuntimeException("unhandled error");
+            logger.error("error while try generate token", e);
+            throw new RuntimeException("unhandled error");
         }
         //return null;
     }
-    
+
     public String httpsPostCall(String baseUrl, String body) {
 
         String token = generateToken().getToken();
@@ -101,25 +101,25 @@ public class ApiService {
         RequestEntity<String> request = post(uri)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .header( HEADER_CLIENT_ID,INTI_CLIENT_ID)
-                .header(HEADER_CLIENT_SECRET,INTI_CLIENT_SECRET)
+                .header("x-apigee-client-id","qAh98noUZkV9GcKWWGSadvRpe70FfDe3")
+                .header("x-apigee-client-secret","TJVDYMNWaxbgiHAB")
                 .header(HEADER_TOKEN, token)
                 .body(body);
 
         try {
-        	logger.info("send request to get store ean, body: {}", body);
+            logger.info("send request to get store ean, body: {}", body);
             ResponseEntity<String> result = restTemplate.exchange(request, String.class);
-        	logger.info("get response store ean request, body: {}, response: {}", body, result);
-            
-        	if (result.getStatusCode().is2xxSuccessful()) {
-            	return result.getBody();
+            logger.info("get response store ean request, body: {}, response: {}", body, result);
+
+            if (result.getStatusCode().is2xxSuccessful()) {
+                return result.getBody();
             } else {
-            	throw new RuntimeException("bad request");
+                throw new RuntimeException("bad request");
             }
         } catch (Exception e) {
             //System.out.println("failed to send POST request : message" + e.getMessage());
-        	logger.info("unhandled error while request store ean, body: {}", body);
-        	throw new RuntimeException("unhandled error");
+            logger.info("unhandled error while request store ean, body: {}", body);
+            throw new RuntimeException("unhandled error");
         }
     }
     public String httpsGetCall(String baseUrl, String params){
